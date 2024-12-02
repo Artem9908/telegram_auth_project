@@ -17,22 +17,18 @@ def home(request):
 
 def generate_token(request):
     if not request.user.is_authenticated:
-        # Создание временного пользователя
         user = User.objects.create(username=str(uuid.uuid4()))
         user.set_unusable_password()
         user.save()
     else:
         user = request.user
 
-    # Генерация уникального токена
     token = str(uuid.uuid4())
     TelegramToken.objects.create(user=user, token=token)
 
-    # Сохраняем токен в сессии
     request.session['auth_token'] = token
 
-    # Ссылка на Telegram-бота с токеном
-    bot_username = 'myauthtest_bot'  # Замените на имя вашего бота
+    bot_username = 'myauthtest_bot' 
     telegram_link = f'https://t.me/{bot_username}?start={token}'
 
     return redirect(telegram_link)
@@ -52,10 +48,9 @@ def telegram_callback(request):
             try:
                 tg_token = TelegramToken.objects.get(token=token, is_used=False)
                 tg_token.is_used = True
-                tg_token.is_authenticated = True  # Обновляем статус авторизации
+                tg_token.is_authenticated = True 
                 tg_token.save()
 
-                # Обновление информации о пользователе
                 user = tg_token.user
                 user.username = username
                 user.save()
@@ -75,7 +70,6 @@ def check_auth(request):
         if token:
             try:
                 tg_token = TelegramToken.objects.get(token=token, is_authenticated=True)
-                # Авторизуем пользователя
                 login(request, tg_token.user)
                 is_authenticated = True
             except TelegramToken.DoesNotExist:
