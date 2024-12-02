@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Авторизация через Telegram</title>
+</head>
+<body>
+    {% if username %}
+        <h1>Добро пожаловать, {{ username }}!</h1>
+    {% else %}
+        <h1>Вы не авторизованы</h1>
+        <a href="{% url 'generate_token' %}">Войти через Telegram</a>
+        <script>
+            setInterval(function() {
+                fetch('{% url "check_auth" %}')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.is_authenticated) {
+                            location.reload();
+                        }
+                    });
+            }, 5000); // Проверка каждые 5 секунд
+        </script>
+    {% endif %}
+</body>
+</html>
